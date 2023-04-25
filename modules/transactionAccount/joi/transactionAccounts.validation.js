@@ -6,6 +6,7 @@ module.exports = {
             details : Joi.string().min(3).required(),
             company_id : Joi.number().min(1).required() ,
             transaction_id : Joi.number().min(1).required() ,
+            amount : Joi.number().min(0).required()
         })
     },
     updateHistoryTransactionsSchema:{

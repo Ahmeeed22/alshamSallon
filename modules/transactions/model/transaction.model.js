@@ -1,9 +1,6 @@
 const { Sequelize } = require("sequelize");
 const sequelize = require("../../../configrations/sequelize");
-const Company = require("../../companies/model/company.model");
-const Customer = require("../../customers/model/customer.model");
-const Service = require("../../services/model/service.model");
-const User = require("../../users/model/user.model");
+
 
 const Transaction =sequelize.define('transaction',{
     id:{
@@ -23,21 +20,7 @@ const Transaction =sequelize.define('transaction',{
     },
     price:{
         type:Sequelize.INTEGER
-    },
-    profite:{
-        type :Sequelize.INTEGER,
-        allowNull:false
-    },
-    quantity:{
-        type : Sequelize.INTEGER,
-        defaultValue:1
-    },
-    totalPrice: {
-      type: Sequelize.VIRTUAL,
-      get() {
-        return (+this.price + +this.profite)* +this.quantity;
-      }  
-    },  
+    }, 
     active:{
         type: Sequelize.BOOLEAN,
         defaultValue: true,
@@ -45,19 +28,20 @@ const Transaction =sequelize.define('transaction',{
     sponsoredName : {
         type : Sequelize.STRING,
         allowNull:true 
-    }
+    },
+    created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn('NOW'),
+        // defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
+      },
+      updated_at: {   
+        type: Sequelize.DATE,
+        allowNull: true
+      }
+    }, {
+      sequelize,
+      timestamps: false,
 });
-      // Transaction.belongsTo(User, {
-      //   foreignKey: 'admin_id',
-      // });
-      // Transaction.belongsTo(Customer, {
-      //   foreignKey: 'customer_id',
-      // });
-      // Transaction.belongsTo(Service, {
-      //   foreignKey: 'service_id',
-      // });
-      // Transaction.belongsTo(Company, {
-      //   foreignKey: 'company_id',
-      // });
 
 module.exports=Transaction ;

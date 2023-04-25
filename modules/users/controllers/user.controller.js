@@ -62,9 +62,16 @@ const deleteUser=catchAsyncError(async(req,res,next)=>{
 const updateUser=catchAsyncError(async(req,res,next)=>{
 //    try {
         let id=req.params.id;
-        let {name}=req.body;
-        await User.update({name},{where:{id}})
-        res.status(StatusCodes.OK).json({message:"success"})
+        let {password}=req.body;
+
+        bcrypt.hash(password,7, async (err,hash)=>{
+            if(err) throw err
+            var result= await User.update({...req.body , password:hash},{where:{id}})
+            res.status(StatusCodes.OK).json({message:"success"})
+
+        })
+
+
 //    } catch (error) {
 //         next(new AppError('server Error',500))    
 //     //  res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({message : 'error' , error})

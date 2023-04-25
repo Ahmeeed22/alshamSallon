@@ -7,7 +7,6 @@ const { StatusCodes } = require("http-status-codes");
 const AppError = require("../../../helpers/AppError");
 const { catchAsyncError } = require("../../../helpers/catchSync");
 const LoggerService = require("../../../services/logger.service");
-const HistoryTransactions = require("../../historyTransaction/model/history.transactions.model");
 
 const logger=new LoggerService('transaction.controller')
 
@@ -22,7 +21,7 @@ const getAllTransactions=catchAsyncError(async(req,res,next)=>{
         filterObj['offset'] = indexInputs.offset * filterObj.limit;
     }
     
-    filterObj.where['company_id'] =req.loginData.company_id
+    filterObj.where['company_id'] =req.loginData.company_id ||1
     // if (indexInputs.orderBy) {
         filterObj['order'] = [
             [indexInputs?.orderBy?.coulmn|| 'createdAt', indexInputs?.orderBy?.type || 'DESC'],
@@ -57,42 +56,16 @@ const getAllTransactions=catchAsyncError(async(req,res,next)=>{
             ,include:[ {model:User,attributes: ['name', "id"]},
                         {model:Customer,attributes: ['name', "id"]},
                         {model:Service,attributes: ['name', "id","desc"]},
-                        {model:HistoryTransactions,attributes:["details","id","createdAt","transaction_id","company_id"]}
                     ]
         })
         var transactionsInfo=await Transaction.findAll({
           where: filterObj.where
             ,attributes: [ 
                 [
-                // Sequelize.fn('sum', Sequelize.col('profite')), 'total profite'
-                Sequelize.fn(
-                          'SUM',
-                          Sequelize.where(Sequelize.col('profite'), '*', Sequelize.col('quantity'))
-                        ),
-                        'total_profite',
-                ],
-                [
-                    Sequelize.fn(
-                              'SUM',
-                              Sequelize.where(Sequelize.col('paymentAmount'), '+', Sequelize.col('balanceDue'))
-                            ),
-                            'total_price',
-                ],
-                [
                     Sequelize.fn('sum', Sequelize.col('paymentAmount')), 'paymentAmount'
                 ],
                 [
                     Sequelize.fn('sum', Sequelize.col('balanceDue')), 'balanceDue'
-                ],
-                [
-                    Sequelize.fn('sum', Sequelize.col('quantity')), 'quantity'
-                ],
-                [
-                    Sequelize.fn(
-                        'SUM',
-                              Sequelize.where(Sequelize.col('price'), '*', Sequelize.col('quantity'))
-                            ),
-                            'total_price_without_profite'
                 ]
             ],
         })
@@ -104,14 +77,11 @@ const getAllTransactions=catchAsyncError(async(req,res,next)=>{
 
 const addTransaction=catchAsyncError(async (req,res,next)=>{ 
     // try{
-        if ((req.body.paymentAmount + req.body.balanceDue) == ((req.body.price + req.body.profite)*req.body.quantity)) {
+        if ((req.body.paymentAmount + req.body.balanceDue) == (req.body.price)) {
             
             var transaction = await Transaction.create(req.body);
-                // add history transaction
-                let date=new Date()
-                var historyTransaction=await HistoryTransactions.create({details:`the fist payment Amount  = ${transaction.dataValues.paymentAmount} at ${date.toLocaleDateString()} ${date.getHours()+":"+date.getMinutes()+":"+ date.getSeconds()}`,transaction_id:transaction.dataValues.id,company_id:req.loginData.company_id})
 
-            res.status(StatusCodes.CREATED).json({message:"success",result:transaction ,historyTransaction:historyTransaction})
+            res.status(StatusCodes.CREATED).json({message:"success",result:transaction })
         }else{
             res.status(StatusCodes.BAD_REQUEST).json({message:"invalid data of payamount and balance"}) 
         }
@@ -129,14 +99,11 @@ const updateTransaction= catchAsyncError(async (req,res,next)=>{
             next(new AppError("this id not valid",400))
             // res.status(StatusCodes.BAD_REQUEST).json({message:"this id not valid"}) 
             console.log(transaction.dataValues);
-            if ((req.body.paymentAmount + req.body.balanceDue) == ((transaction.dataValues.price + transaction.dataValues.profite)*transaction.dataValues.quantity)) {
+            if ((req.body.paymentAmount + req.body.balanceDue) == (req.body.price)){
 
                 var transactionUpdated =await Transaction.update(req.body,{where:{id}})
-                let date=new Date()
-                logger.info(`Last_P = ${transaction.dataValues.paymentAmount} and New_P = ${req.body.paymentAmount-transaction.dataValues.paymentAmount} the total payment = ${req.body.paymentAmount} at ${date.toLocaleDateString()} ` )
-                // add history transaction
-                var historyTransaction=await HistoryTransactions.create({details:`Last_P = ${transaction.dataValues.paymentAmount} and New_P = ${req.body.paymentAmount-transaction.dataValues.paymentAmount} the total payment = ${req.body.paymentAmount} at ${date.toLocaleDateString()} ${date.getHours()+":"+date.getMinutes()+":"+ date.getSeconds()}`,transaction_id:id,company_id:req.loginData.company_id})
-                res.status(StatusCodes.OK).json({message:"success",result:transactionUpdated,historyTransaction:historyTransaction})
+ 
+                res.status(StatusCodes.OK).json({message:"success",result:transactionUpdated })
             }else{
                 res.status(StatusCodes.BAD_REQUEST).json({message:"invalid data of payamount and balance"}) 
             }

@@ -12,16 +12,13 @@ const Customer =sequelize.define('customer',{
         type:Sequelize.STRING,
         allowNull: false ,
     },
-    email:{
-        type:Sequelize.STRING,
-        allowNull:true ,
-    },
     phoneNo:{
         type:Sequelize.INTEGER ,
-    },
+    }, 
     deposite:{
         type:Sequelize.INTEGER ,
-        defaultValue:0 
+        defaultValue:0 ,
+        allowNull:true
     },
     active:{
         type: Sequelize.BOOLEAN,
