@@ -21,7 +21,7 @@ const getAllTransactions=catchAsyncError(async(req,res,next)=>{
         filterObj['offset'] = indexInputs.offset * filterObj.limit;
     }
     
-    filterObj.where['company_id'] =req.loginData.company_id ||1
+    filterObj.where['company_id'] =req.loginData?.company_id ||1
     // if (indexInputs.orderBy) {
         filterObj['order'] = [
             [indexInputs?.orderBy?.coulmn|| 'createdAt', indexInputs?.orderBy?.type || 'DESC'],
@@ -66,6 +66,9 @@ const getAllTransactions=catchAsyncError(async(req,res,next)=>{
                 ],
                 [
                     Sequelize.fn('sum', Sequelize.col('balanceDue')), 'balanceDue'
+                ],
+                [
+                    Sequelize.fn('sum', Sequelize.col('price')), 'price'
                 ]
             ],
         })

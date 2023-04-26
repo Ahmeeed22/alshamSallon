@@ -2,10 +2,49 @@ const { StatusCodes } = require("http-status-codes");
 const AppError = require("../../../helpers/AppError");
 const { catchAsyncError } = require("../../../helpers/catchSync");
 const TransactionAccount = require("../model/transactionAccounts.model");
+const { Op } = require("sequelize");
 
 const getAllTransactionAccount=catchAsyncError(async(req,res,next)=>{
-        var TransactionAccount=await TransactionAccount.findAndCountAll()
-        res.status(StatusCodes.OK).json({message:"success",result:TransactionAccount})
+    const indexInputs =  req.body ;
+    const filterObj = {
+        where: {},
+        limit: indexInputs.limit || 10,
+    }
+    if (indexInputs.offset) { 
+        filterObj['offset'] = indexInputs.offset * filterObj.limit;
+    }
+    
+    filterObj.where['company_id'] =req.loginData?.company_id ||1
+    // if (indexInputs.orderBy) {
+        filterObj['order'] = [
+            [indexInputs?.orderBy?.coulmn|| 'createdAt', indexInputs?.orderBy?.type || 'DESC'],
+        ];
+    // }
+    if(indexInputs.type !=undefined){
+        filterObj.where.type = indexInputs.type 
+    }
+    if(indexInputs.receiptNumber !=undefined){
+        filterObj.where.receiptNumber = indexInputs.receiptNumber 
+    }
+    if(indexInputs.admin_id !=undefined){
+        filterObj.where.admin_id = indexInputs.admin_id 
+    }
+    var startedDate=indexInputs.startedDate? new Date(indexInputs.startedDate) : new Date("2020-12-12 00:00:00");
+    // date.setHours(date.getHours() + hours)
+    let date=new Date(indexInputs.endDate)
+    var  endDate=indexInputs.endDate? date.setHours(date.getHours() + 24) : new Date();
+    if(indexInputs.startedDate || indexInputs.endDate){
+        filterObj.where["createdAt"] ={
+             [Op.between] : [startedDate , endDate]
+        }   
+    }
+    if (indexInputs.active ==true ||indexInputs.active ==false ) {
+        filterObj.where.active = indexInputs.active ;
+    }
+        var transactionAccount=await TransactionAccount.findAndCountAll({ 
+            ...filterObj
+        })
+        res.status(StatusCodes.OK).json({message:"success",result:transactionAccount})
 })
 
 const addTransactionAccount=catchAsyncError(async (req,res,next)=>{
@@ -47,7 +86,5 @@ const searchTransactionAccount=catchAsyncError(async(req,res,next)=>{
             res.status(StatusCodes.OK).json({message:"success",TransactionAccount})
             }
 })
-
-
 
 module.exports={getAllTransactionAccount , addTransactionAccount , deleteTransactionAccount ,searchTransactionAccount , updateTransactionAccount}

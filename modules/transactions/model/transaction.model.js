@@ -28,20 +28,7 @@ const Transaction =sequelize.define('transaction',{
     sponsoredName : {
         type : Sequelize.STRING,
         allowNull:true 
-    },
-    created_at: {
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
-        // defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
-      },
-      updated_at: {   
-        type: Sequelize.DATE,
-        allowNull: true
-      }
-    }, {
-      sequelize,
-      timestamps: false,
+    }
 });
 
 module.exports=Transaction ;

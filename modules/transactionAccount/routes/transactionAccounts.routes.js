@@ -4,7 +4,7 @@ const { getAllTransactionAccount, addTransactionAccount, deleteTransactionAccoun
  
 const transactionAccountRoutes=require('express').Router()
 
-transactionAccountRoutes.get('/getAllTransactionAccount',isAuth('ADMIN'),getAllTransactionAccount)
+transactionAccountRoutes.post('/getAllTransactionAccount',getAllTransactionAccount)
 transactionAccountRoutes.post('/addTransactionAccount',addTransactionAccount)
 transactionAccountRoutes.put('/updateTransactionAccount/:id',isAuth('ADMIN'),updateTransactionAccount)
 transactionAccountRoutes.delete('/deleteTransactionAccount/:id',isAuth('ADMIN'),deleteTransactionAccount)
