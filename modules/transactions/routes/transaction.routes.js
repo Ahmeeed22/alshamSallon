@@ -4,8 +4,8 @@ const { addTransaction,getAllTransactions, updateTransaction, deleteTransaction 
 const { getAllTransaction, updateTransactionSchema, addTransactionSchema } = require('../joi/transaction.validation')
 const transactionsRoutes=require('express').Router()
 
-transactionsRoutes.post('/allTransactions',validationRequest(getAllTransaction),getAllTransactions) 
-transactionsRoutes.post('/addTransaction',validationRequest(addTransactionSchema),addTransaction)
+transactionsRoutes.post('/allTransactions',isAuth('ALL'),validationRequest(getAllTransaction),getAllTransactions) 
+transactionsRoutes.post('/addTransaction',isAuth('ALL'),validationRequest(addTransactionSchema),addTransaction)
 transactionsRoutes.put('/updateTransaction/:id',isAuth('ALL'),validationRequest(updateTransactionSchema),updateTransaction)
 transactionsRoutes.patch('/deleteTransactionSoft/:id',isAuth('ALL'),deleteTransaction)
 // transactionsRoutes.get('/searchTransaction',searchTransactions)
