@@ -2,7 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const AppError = require("../../../helpers/AppError");
 const { catchAsyncError } = require("../../../helpers/catchSync");
 const TransactionAccount = require("../model/transactionAccounts.model");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 
 const getAllTransactionAccount=catchAsyncError(async(req,res,next)=>{
     const indexInputs =  req.body ;
@@ -44,11 +44,20 @@ const getAllTransactionAccount=catchAsyncError(async(req,res,next)=>{
         var transactionAccount=await TransactionAccount.findAndCountAll({ 
             ...filterObj
         })
-        res.status(StatusCodes.OK).json({message:"success",result:transactionAccount})
+        var transactionAccountSum=await TransactionAccount.findAndCountAll({ 
+            ...filterObj  ,attributes: [ 
+                
+                [
+                    Sequelize.fn('sum', Sequelize.col('amount')), 'amount'
+                ]
+            ],
+        })
+        res.status(StatusCodes.OK).json({message:"success",result:{transactionAccount:transactionAccount,sum:transactionAccountSum}})
 })
 
 const addTransactionAccount=catchAsyncError(async (req,res,next)=>{
-        var transactionAccount = await TransactionAccount.create(req.body);
+        const company_id=req.loginData?.company_id ||1
+        var transactionAccount = await TransactionAccount.create({...req.body,company_id});
         res.status(StatusCodes.CREATED).json({message:"success",result:transactionAccount})
 })
 
