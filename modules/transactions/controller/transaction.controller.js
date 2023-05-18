@@ -209,10 +209,10 @@ const getTransactionsSummary=catchAsyncError(async(req,res,next)=>{
             ],
         }) 
         var sumExpenses = transactionAccountSumExpenses?.rows[0]?.dataValues?.sumExpenses || 0;
-        console.log("paymentAmount ",paymentAmount,"sumSupply ",sumSupply,"sumExpenses ",sumExpenses);
+        console.log("price ",price,"paymentAmount ",paymentAmount,"sumSupply ",sumSupply,"sumExpenses ",sumExpenses);
     
         var currentCash=paymentAmount-sumSupply-sumExpenses ;
-        var profite = price||0-sumExpenses||0 ;
+        var profite =( price||0)-(sumExpenses||0) ;
         res.status(StatusCodes.OK).json({message:"success",summary:{sumExpenses,currentCash,profite,balanceDue,count,sumSupply , grossPrice:price ,transactionAccountSumExpenses,paymentAmount}})
 })
 
